@@ -1,0 +1,35 @@
+# Backend (Laravel)
+/backend/.phpunit.cache
+/backend/node_modules
+/backend/public/build
+/backend/public/hot
+/backend/public/storage
+/backend/storage/*.key
+/backend/storage/pail
+/backend/vendor
+/backend/.env
+/backend/.env.backup
+/backend/.env.production
+/backend/.phpactor.json
+/backend/.phpunit.result.cache
+/backend/auth.json
+
+# Frontend (React/Vite) - for when we scaffold it
+/frontend/node_modules
+/frontend/dist
+/frontend/.env
+/frontend/.env.local
+
+# Shared
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# Editor/IDE
+.fleet
+.idea
+.nova
+.vscode
+.zed
+.DS_Store
