@@ -37,6 +37,11 @@ class Hero extends Model
         'aliases' => 'array', // auto JSON-encode/decode
     ];
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function favoritedBy(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
