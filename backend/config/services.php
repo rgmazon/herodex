@@ -36,8 +36,7 @@ return [
     ],
 
     'superhero_api' => [
-    'key' => env('SUPERHERO_API_KEY'),
-    'base_url' => 'https://superheroapi.com/api',
-],
+    'base_url' => 'https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api',
+    ],
 
 ];

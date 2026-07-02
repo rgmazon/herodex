@@ -15,6 +15,27 @@ Route::get('/heroes/search',   [HeroController::class, 'search']);
 Route::get('/heroes/compare',  [HeroController::class, 'compare']);
 Route::get('/heroes/{hero}',   [HeroController::class, 'show']);
 
+Route::get('/image-proxy', function (Illuminate\Http\Request $request) {
+    $url = $request->query('url');
+
+    if (!$url || !str_contains($url, 'superherodb.com')) {
+        abort(400, 'Invalid image URL');
+    }
+
+    $response = Illuminate\Support\Facades\Http::withHeaders([
+        'Referer' => 'https://www.superherodb.com',
+        'User-Agent' => 'Mozilla/5.0',
+    ])->get($url);
+
+    if ($response->failed()) {
+        abort(404, 'Image not found');
+    }
+
+    return response($response->body(), 200)
+        ->header('Content-Type', $response->header('Content-Type'))
+        ->header('Cache-Control', 'public, max-age=604800'); // cache 7 days
+});
+
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     // Auth

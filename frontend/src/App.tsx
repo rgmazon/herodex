@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import Navbar from './components/Navbar'
 
-// Pages (we'll create these next)
 import ExplorePage from './pages/ExplorePage'
 import HeroDetailPage from './pages/HeroDetailPage'
 import ComparePage from './pages/ComparePage'
@@ -18,22 +18,27 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<ExplorePage />} />
-      <Route path="/heroes/:slug" element={<HeroDetailPage />} />
-      <Route path="/compare" element={<ComparePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route
-        path="/favorites"
-        element={
-          <ProtectedRoute>
-            <FavoritesPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <Navbar />
+      <main>
+        <Routes>
+          <Route path="/" element={<ExplorePage />} />
+          <Route path="/heroes/:slug" element={<HeroDetailPage />} />
+          <Route path="/compare" element={<ComparePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute>
+                <FavoritesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
   )
 }
 
