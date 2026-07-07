@@ -39,4 +39,9 @@ return [
     'base_url' => 'https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api',
     ],
 
+    'newsapi' => [
+    'key'      => env('NEWSAPI_KEY'),
+    'base_url' => 'https://newsapi.org/v2',
+    ],
+
 ];

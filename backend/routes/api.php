@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HeroController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\NewsController;
 
 // Public auth routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -12,8 +13,12 @@ Route::post('/login',    [AuthController::class, 'login']);
 // Public hero routes
 Route::get('/heroes',          [HeroController::class, 'index']);
 Route::get('/heroes/search',   [HeroController::class, 'search']);
+Route::get('/heroes/featured', [HeroController::class, 'featured']);
 Route::get('/heroes/compare',  [HeroController::class, 'compare']);
 Route::get('/heroes/{hero}',   [HeroController::class, 'show']);
+
+// News
+Route::get('/news', [NewsController::class, 'index']);
 
 Route::get('/image-proxy', function (Illuminate\Http\Request $request) {
     $url = $request->query('url');

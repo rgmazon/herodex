@@ -102,4 +102,17 @@ class HeroController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Return 10 random heroes for the homepage featured section.
+     * GET /api/heroes/featured
+     */
+    public function featured(): JsonResponse
+    {
+        $heroes = Hero::inRandomOrder()->limit(10)->get();
+
+        return response()->json([
+            'data' => $heroes,
+        ]);
+    }
 }
