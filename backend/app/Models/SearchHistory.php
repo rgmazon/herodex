@@ -8,7 +8,9 @@ use App\Models\User;
 
 class SearchHistory extends Model
 {
-    public $timestamps = false; // we use searched_at instead
+    protected $table = 'search_history'; // override Laravel's auto-pluralization
+
+    public $timestamps = false;
 
     protected $fillable = [
         'user_id',

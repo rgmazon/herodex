@@ -5,6 +5,7 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HeroController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\SearchHistoryController;
 
 // Public auth routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -52,4 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites/{hero}',      [FavoriteController::class, 'store']);
     Route::delete('/favorites/{hero}',    [FavoriteController::class, 'destroy']);
     Route::get('/favorites/{hero}/check', [FavoriteController::class, 'check']);
+    // Search History
+    Route::get('/search-history',    [SearchHistoryController::class, 'index']);
+    Route::delete('/search-history', [SearchHistoryController::class, 'clear']);
 });

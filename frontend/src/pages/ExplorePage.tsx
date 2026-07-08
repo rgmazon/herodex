@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/axios'
+import { useAuth } from '../context/AuthContext'
 
 interface Hero {
   id: number
@@ -18,6 +19,12 @@ interface NewsArticle {
   url: string
   source: string
   published_at: string | null
+}
+
+interface SearchHistoryItem {
+  id: number
+  keyword: string
+  searched_at: string
 }
 
 function HeroCard({ hero, onClick }: { hero: Hero; onClick: () => void }) {
@@ -111,6 +118,16 @@ export default function ExplorePage() {
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([])
+
+  // Load search history for authenticated users
+  useEffect(() => {
+    if (!isAuthenticated) return
+    api.get('/search-history')
+      .then((res) => setSearchHistory(res.data.data ?? []))
+      .catch(() => {})
+  }, [isAuthenticated])
 
   // Load featured heroes + news on mount
   useEffect(() => {
@@ -131,6 +148,12 @@ export default function ExplorePage() {
     try {
       const res = await api.get('/heroes/search', { params: { q: query } })
       setHeroes(res.data.data ?? [])
+      // Refresh history after search
+      if (isAuthenticated) {
+        api.get('/search-history')
+          .then((res) => setSearchHistory(res.data.data ?? []))
+          .catch(() => {})
+      }
     } catch {
       setError('Something went wrong. Please try again.')
       setHeroes([])
@@ -190,6 +213,37 @@ export default function ExplorePage() {
           </button>
         )}
       </div>
+
+      {/* Recent searches — authenticated users only */}
+      {isAuthenticated && searchHistory.length > 0 && !searched && (
+        <div className="max-w-xl mx-auto mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-400 text-xs uppercase tracking-wider">Recent searches</p>
+            <button
+              onClick={() => {
+                api.delete('/search-history').then(() => setSearchHistory([]))
+              }}
+              className="text-gray-500 hover:text-red-400 text-xs transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {searchHistory.slice(0, 5).map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setQuery(item.keyword)
+                  setTimeout(() => search(), 0)
+                }}
+                className="bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-sm px-3 py-1.5 rounded-lg transition-colors border border-gray-700 hover:border-gray-500"
+              >
+                🔍 {item.keyword}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Search results */}
       {searched && (

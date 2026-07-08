@@ -25,6 +25,15 @@ class HeroController extends Controller
 
         $heroes = $this->superheroService->searchByName($request->q);
 
+        // Log search history for authenticated users
+        $user = auth('sanctum')->user();
+        if ($user) {
+            \App\Models\User::find($user->id)?->searchHistory()->create([
+                'keyword'     => $request->q,
+                'searched_at' => now(),
+            ]);
+        }
+
         if (empty($heroes)) {
             return response()->json([
                 'message' => 'No heroes found.',
