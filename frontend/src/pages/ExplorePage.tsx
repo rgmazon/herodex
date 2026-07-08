@@ -118,16 +118,16 @@ export default function ExplorePage() {
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, loading: authLoading } = useAuth()
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([])
 
   // Load search history for authenticated users
   useEffect(() => {
-    if (!isAuthenticated) return
+    if (authLoading || !isAuthenticated) return
     api.get('/search-history')
       .then((res) => setSearchHistory(res.data.data ?? []))
       .catch(() => {})
-  }, [isAuthenticated])
+  }, [isAuthenticated, authLoading])
 
   // Load featured heroes + news on mount
   useEffect(() => {
