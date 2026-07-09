@@ -40,12 +40,15 @@ export default function TeamsPage() {
     if (!newTeamName.trim()) return
     setCreating(true)
     try {
-      const res = await api.post('/teams', { team_name: newTeamName.trim() })
-      setTeams((prev) => [res.data.data, ...prev])
-      setNewTeamName('')
-    } catch {}
-    finally { setCreating(false) }
-  }
+        const res = await api.post('/teams', { team_name: newTeamName.trim() })
+        setTeams((prev) => [{ ...res.data.data, members: [] }, ...prev])
+        setNewTeamName('')
+    } catch (err) {
+        console.error('Failed to create team:', err)
+    } finally {
+        setCreating(false)
+    }
+    }
 
   const deleteTeam = async (teamId: number) => {
     await api.delete(`/teams/${teamId}`)
@@ -110,7 +113,7 @@ export default function TeamsPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-6">
-          {teams.map((team) => (
+          {(teams ?? []).map((team) => (
             <div key={team.id} className="bg-gray-800 rounded-2xl p-5">
 
               {/* Team header */}
