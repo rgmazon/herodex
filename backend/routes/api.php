@@ -6,6 +6,7 @@ use App\Http\Controllers\HeroController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\SearchHistoryController;
+use App\Http\Controllers\HeroTeamController;
 
 // Public auth routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -56,4 +57,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Search History
     Route::get('/search-history',    [SearchHistoryController::class, 'index']);
     Route::delete('/search-history', [SearchHistoryController::class, 'clear']);
+
+    // Hero Teams
+    Route::get('/teams',                                [HeroTeamController::class, 'index']);
+    Route::post('/teams',                               [HeroTeamController::class, 'store']);
+    Route::delete('/teams/{team}',                      [HeroTeamController::class, 'destroy']);
+    Route::post('/teams/{team}/members/{hero}',         [HeroTeamController::class, 'addMember']);
+    Route::delete('/teams/{team}/members/{hero}',       [HeroTeamController::class, 'removeMember']);
 });

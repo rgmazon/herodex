@@ -37,6 +37,14 @@ export default function Navbar() {
               Favorites
             </Link>
           )}
+          {isAuthenticated && (
+            <Link
+              to="/teams"
+              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              Teams
+            </Link>
+          )}
         </div>
 
         {/* Desktop auth */}
@@ -96,6 +104,14 @@ export default function Navbar() {
           {isAuthenticated && (
             <Link to="/favorites" onClick={closeMenu} className="text-gray-300 hover:text-white text-sm font-medium transition-colors">
               Favorites
+            </Link>
+          )}
+          {isAuthenticated && (
+            <Link
+              to="/teams"
+              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              Teams
             </Link>
           )}
 

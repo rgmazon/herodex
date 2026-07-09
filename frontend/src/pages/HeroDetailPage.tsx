@@ -39,6 +39,12 @@ interface Hero {
   power: number | null
 }
 
+interface Team {
+  id: number
+  team_name: string
+  members: { hero_id: number }[]
+}
+
 export default function HeroDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
@@ -48,12 +54,22 @@ export default function HeroDetailPage() {
   const [loading, setLoading] = useState(true)
   const [favorited, setFavorited] = useState(false)
   const [favLoading, setFavLoading] = useState(false)
+  const [teams, setTeams] = useState<Team[]>([])
+  const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
+  const [teamLoading, setTeamLoading] = useState(false)
 
   useEffect(() => {
     if (!slug) return
     setLoading(true)
     api.get(`/heroes/${slug}`)
-      .then((res) => setHero(res.data.data))
+      .then((res) => {
+        setHero(res.data.data)
+        if (isAuthenticated) {
+          api.get('/teams')
+            .then((r) => setTeams(r.data.data ?? []))
+            .catch(() => {})
+        }
+      })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
   }, [slug])
@@ -81,6 +97,20 @@ export default function HeroDetailPage() {
       }
     } catch {}
     finally { setFavLoading(false) }
+  }
+
+  const addToTeam = async (teamId: number) => {
+    if (!hero) return
+    setTeamLoading(true)
+    try {
+      await api.post(`/teams/${teamId}/members/${hero.slug}`)
+      const res = await api.get('/teams')
+      setTeams(res.data.data ?? [])
+    } catch {}
+    finally {
+      setTeamLoading(false)
+      setTeamDropdownOpen(false)
+    }
   }
 
   if (loading) {
@@ -158,7 +188,7 @@ export default function HeroDetailPage() {
 
       <div className="grid md:grid-cols-3 gap-8">
 
-        {/* Left column — image + quick info */}
+        {/* Left column — image + actions */}
         <div className="md:col-span-1">
           <div className="rounded-2xl overflow-hidden bg-gray-800 mb-4">
             {hero.image_url ? (
@@ -172,7 +202,7 @@ export default function HeroDetailPage() {
           <button
             onClick={toggleFavorite}
             disabled={favLoading}
-            className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-colors mb-4 ${
+            className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-colors mb-2 ${
               favorited
                 ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300'
                 : 'bg-gray-700 text-white hover:bg-gray-600'
@@ -184,10 +214,45 @@ export default function HeroDetailPage() {
           {/* Compare button */}
           <button
             onClick={() => navigate(`/compare?hero1=${hero.slug}`)}
-            className="w-full py-2.5 rounded-xl font-semibold text-sm bg-gray-700 text-white hover:bg-gray-600 transition-colors"
+            className="w-full py-2.5 rounded-xl font-semibold text-sm bg-gray-700 text-white hover:bg-gray-600 transition-colors mb-2"
           >
             ⚔ Compare
           </button>
+
+          {/* Add to Team button */}
+          {isAuthenticated && teams.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}
+                disabled={teamLoading}
+                className="w-full py-2.5 rounded-xl font-semibold text-sm bg-gray-700 text-white hover:bg-gray-600 transition-colors"
+              >
+                {teamLoading ? '...' : '👥 Add to Team'}
+              </button>
+
+              {teamDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-xl overflow-hidden shadow-xl">
+                  {teams.map((team) => {
+                    const isMember = team.members.some((m) => m.hero_id === hero.id)
+                    const isFull = team.members.length >= 6
+                    return (
+                      <button
+                        key={team.id}
+                        onClick={() => !isMember && !isFull && addToTeam(team.id)}
+                        disabled={isMember || isFull}
+                        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-left"
+                      >
+                        <span className="text-white text-sm">{team.team_name}</span>
+                        <span className="text-gray-400 text-xs">
+                          {isMember ? '✓ Added' : isFull ? 'Full' : `${team.members.length}/6`}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right column — details */}
@@ -233,14 +298,13 @@ export default function HeroDetailPage() {
             </div>
           </div>
 
-          {/* Power stats radar chart */}
+          {/* Power stats */}
           {hasStats && (
             <div className="bg-gray-800 rounded-2xl p-5">
               <h2 className="text-white font-semibold mb-4">Power Stats</h2>
               <div className="max-w-xs mx-auto">
                 <Radar data={radarData} options={radarOptions} />
               </div>
-              {/* Stat bars */}
               <div className="mt-4 flex flex-col gap-2">
                 {[
                   { label: 'Intelligence', value: hero.intelligence },
