@@ -6,6 +6,8 @@ use App\Models\Hero;
 use App\Services\SuperheroApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class HeroController extends Controller
 {
@@ -123,5 +125,41 @@ class HeroController extends Controller
         return response()->json([
             'data' => $heroes,
         ]);
+    }
+
+    /**
+     * Fetch Wikipedia summary for a hero.
+     * GET /api/heroes/{slug}/wiki
+     */
+    public function wiki(Hero $hero): JsonResponse
+    {
+        $cacheKey = "wiki_{$hero->slug}";
+
+        $data = Cache::remember($cacheKey, now()->addHours(24), function () use ($hero) {
+            // Try the hero's name first, fall back to full_name if no result
+            $searchName = urlencode($hero->name);
+
+            $response = Http::withHeaders([
+                'User-Agent' => 'HeroDex/1.0 (https://herodex-vert.vercel.app)',
+            ])->get("https://en.wikipedia.org/api/rest_v1/page/summary/{$searchName}");
+
+            if ($response->failed() || $response->json('type') === 'https://mediawiki.org/wiki/HyperSwitch/errors/not_found') {
+                return null;
+            }
+
+            $json = $response->json();
+
+            return [
+                'extract'  => $json['extract'] ?? null,
+                'url'      => $json['content_urls']['desktop']['page'] ?? null,
+                'thumbnail' => $json['thumbnail']['source'] ?? null,
+            ];
+        });
+
+        if (!$data) {
+            return response()->json(['message' => 'No Wikipedia article found.'], 404);
+        }
+
+        return response()->json(['data' => $data]);
     }
 }

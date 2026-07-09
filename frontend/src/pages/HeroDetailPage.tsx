@@ -57,6 +57,7 @@ export default function HeroDetailPage() {
   const [teams, setTeams] = useState<Team[]>([])
   const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
   const [teamLoading, setTeamLoading] = useState(false)
+  const [wiki, setWiki] = useState<{ extract: string; url: string; thumbnail: string | null } | null>(null)
 
   useEffect(() => {
     if (!slug) return
@@ -69,6 +70,10 @@ export default function HeroDetailPage() {
             .then((r) => setTeams(r.data.data ?? []))
             .catch(() => {})
         }
+        // Fetch Wikipedia summary
+        api.get(`/heroes/${res.data.data.slug}/wiki`)
+          .then((r) => setWiki(r.data.data))
+          .catch(() => {})
       })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
@@ -297,6 +302,24 @@ export default function HeroDetailPage() {
               )}
             </div>
           </div>
+
+          {/* Wikipedia Background */}
+          {wiki?.extract && (
+            <div className="bg-gray-800 rounded-2xl p-5 mb-4">
+              <h2 className="text-white font-semibold mb-3">Background</h2>
+              <p className="text-gray-300 text-sm leading-relaxed">{wiki.extract}</p>
+              {wiki.url && (
+                
+                  <a href={wiki.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-3 text-yellow-400 hover:text-yellow-300 text-xs font-medium transition-colors"
+                >
+                  Read more on Wikipedia →
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Power stats */}
           {hasStats && (

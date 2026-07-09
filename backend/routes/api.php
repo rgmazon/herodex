@@ -17,6 +17,7 @@ Route::get('/heroes',          [HeroController::class, 'index']);
 Route::get('/heroes/search',   [HeroController::class, 'search']);
 Route::get('/heroes/featured', [HeroController::class, 'featured']);
 Route::get('/heroes/compare',  [HeroController::class, 'compare']);
+Route::get('/heroes/{hero}/wiki', [HeroController::class, 'wiki']);
 Route::get('/heroes/{hero}',   [HeroController::class, 'show']);
 
 // News
