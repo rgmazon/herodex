@@ -136,24 +136,36 @@ class HeroController extends Controller
         $cacheKey = "wiki_{$hero->slug}";
 
         $data = Cache::remember($cacheKey, now()->addHours(24), function () use ($hero) {
-            // Try the hero's name first, fall back to full_name if no result
-            $searchName = urlencode($hero->name);
+            $headers = ['User-Agent' => 'HeroDex/1.0 (https://herodex-vert.vercel.app)'];
 
-            $response = Http::withHeaders([
-                'User-Agent' => 'HeroDex/1.0 (https://herodex-vert.vercel.app)',
-            ])->get("https://en.wikipedia.org/api/rest_v1/page/summary/{$searchName}");
+            // Build a list of title variants to try
+            $variants = array_unique(array_filter([
+                $hero->name,
+                // Add period after common honorifics
+                preg_replace('/\b(Mr|Mrs|Ms|Dr|St)\b/', '$1.', $hero->name),
+                $hero->full_name,
+            ]));
 
-            if ($response->failed() || $response->json('type') === 'https://mediawiki.org/wiki/HyperSwitch/errors/not_found') {
-                return null;
+            foreach ($variants as $variant) {
+                $title = str_replace(' ', '_', $variant);
+                $response = Http::withHeaders($headers)
+                    ->get("https://en.wikipedia.org/api/rest_v1/page/summary/{$title}");
+
+                if ($response->failed()) continue;
+                if ($response->status() === 404) continue;
+
+                $json = $response->json();
+                if (($json['type'] ?? '') === 'disambiguation') continue;
+                if (!isset($json['extract'])) continue;
+
+                return [
+                    'extract'   => $json['extract'],
+                    'url'       => $json['content_urls']['desktop']['page'] ?? null,
+                    'thumbnail' => $json['thumbnail']['source'] ?? null,
+                ];
             }
 
-            $json = $response->json();
-
-            return [
-                'extract'  => $json['extract'] ?? null,
-                'url'      => $json['content_urls']['desktop']['page'] ?? null,
-                'thumbnail' => $json['thumbnail']['source'] ?? null,
-            ];
+            return null;
         });
 
         if (!$data) {
